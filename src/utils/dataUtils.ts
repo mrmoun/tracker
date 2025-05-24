@@ -18,7 +18,7 @@ export const parseExcelFile = async (file: File, initialInvestment: number): Pro
         
         // Check if the required columns exist
         const firstRow = jsonData[0] as Record<string, any>;
-        const requiredColumns = ['SYMBOL', 'value'];
+        const requiredColumns = ['SYMBOL', 'DateTime', 'value'];
         for (const column of requiredColumns) {
           if (!Object.keys(firstRow).some(key => key === column)) {
             throw new Error(`Required column '${column}' not found in Excel file`);
@@ -28,7 +28,7 @@ export const parseExcelFile = async (file: File, initialInvestment: number): Pro
         // Map data to our format
         const trades: Trade[] = jsonData.map((row: Record<string, any>, index: number) => {
           // Parse the date from M/D/YY H:MM AM/PM format
-          const dateStr = `${row['M/D/YY']} ${row['H:MM AM/PM']}`;
+          const dateStr = row['DateTime'];
           const date = new Date(dateStr);
           
           if (isNaN(date.getTime())) {

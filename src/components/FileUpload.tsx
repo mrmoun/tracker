@@ -108,7 +108,7 @@ const FileUpload: React.FC<FileUploadProps> = ({
               Drag and drop your Excel file here, or click to browse
             </p>
             <p className="text-gray-500 text-sm text-center">
-              Your file should contain SYMBOL, M/D/YY, H:MM AM/PM, and value columns
+              Your file should contain SYMBOL, DateTime (M/D/YY H:MM AM/PM), and value columns
             </p>
           </div>
         )}
