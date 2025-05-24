@@ -18,30 +18,28 @@ export const parseExcelFile = async (file: File, initialInvestment: number): Pro
         
         // Check if the required columns exist
         const firstRow = jsonData[0] as Record<string, any>;
-        const requiredColumns = ['Symbol', 'Date', 'Value'];
+        const requiredColumns = ['SYMBOL', 'value'];
         for (const column of requiredColumns) {
-          if (!Object.keys(firstRow).some(key => key.includes(column))) {
+          if (!Object.keys(firstRow).some(key => key === column)) {
             throw new Error(`Required column '${column}' not found in Excel file`);
           }
         }
         
         // Map data to our format
         const trades: Trade[] = jsonData.map((row: Record<string, any>, index: number) => {
-          // Find the actual column names that contain our required fields
-          const symbolKey = Object.keys(row).find(key => key.includes('Symbol')) || 'Symbol';
-          const dateKey = Object.keys(row).find(key => key.includes('Date')) || 'Date';
-          const valueKey = Object.keys(row).find(key => key.includes('Value')) || 'Value';
+          // Parse the date from M/D/YY H:MM AM/PM format
+          const dateStr = `${row['M/D/YY']} ${row['H:MM AM/PM']}`;
+          const date = new Date(dateStr);
           
-          const date = new Date(row[dateKey]);
           if (isNaN(date.getTime())) {
-            throw new Error(`Invalid date format in row ${index + 1}`);
+            throw new Error(`Invalid date format in row ${index + 1}. Expected format: M/D/YY H:MM AM/PM`);
           }
           
           return {
             id: index + 1,
-            symbol: String(row[symbolKey]),
+            symbol: String(row['SYMBOL']),
             date: date.toISOString(),
-            value: Number(row[valueKey]),
+            value: Number(row['value']),
             accumulatedValue: 0, // Will be calculated below
           };
         });
