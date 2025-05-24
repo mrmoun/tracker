@@ -25,47 +25,53 @@ export const parseExcelFile = async (file: File, initialInvestment: number): Pro
           }
         }
         
-        // Map data to our format
-        const trades: Trade[] = jsonData.map((row: Record<string, any>, index: number) => {
-          // Parse the date from M/D/YY H:MM AM/PM format
-          const dateStr = row['DateTime'];
-          
-          // Convert two-digit year to four-digit year
-          const [datePart, timePart] = dateStr.split(' ');
-          const [month, day, shortYear] = datePart.split('/');
-          const fullYear = '20' + shortYear; // Assuming years are in the 2000s
-          
-          const [time, period] = timePart.split(' ');
-          const [hours, minutes] = time.split(':');
-          
-          // Convert to 24-hour format if PM
-          let hour = parseInt(hours);
-          if (period.toUpperCase() === 'PM' && hour !== 12) {
-            hour += 12;
-          } else if (period.toUpperCase() === 'AM' && hour === 12) {
-            hour = 0;
-          }
-          
-          const date = new Date(
-            parseInt(fullYear),
-            parseInt(month) - 1, // Month is 0-based
-            parseInt(day),
-            hour,
-            parseInt(minutes)
-          );
-          
-          if (isNaN(date.getTime())) {
-            throw new Error(`Invalid date format in row ${index + 1}. Expected format: M/D/YY H:MM AM/PM`);
-          }
-          
-          return {
-            id: index + 1,
-            symbol: String(row['SYMBOL']),
-            date: date.toISOString(),
-            value: Number(row['value']),
-            accumulatedValue: 0, // Will be calculated below
-          };
-        });
+        // Filter out rows without SYMBOL values and map data to our format
+        const trades: Trade[] = jsonData
+          .filter((row: Record<string, any>) => row['SYMBOL'] && String(row['SYMBOL']).trim() !== '')
+          .map((row: Record<string, any>, index: number) => {
+            // Parse the date from M/D/YY H:MM AM/PM format
+            const dateStr = row['DateTime'];
+            
+            // Convert two-digit year to four-digit year
+            const [datePart, timePart] = dateStr.split(' ');
+            const [month, day, shortYear] = datePart.split('/');
+            const fullYear = '20' + shortYear; // Assuming years are in the 2000s
+            
+            const [time, period] = timePart.split(' ');
+            const [hours, minutes] = time.split(':');
+            
+            // Convert to 24-hour format if PM
+            let hour = parseInt(hours);
+            if (period.toUpperCase() === 'PM' && hour !== 12) {
+              hour += 12;
+            } else if (period.toUpperCase() === 'AM' && hour === 12) {
+              hour = 0;
+            }
+            
+            const date = new Date(
+              parseInt(fullYear),
+              parseInt(month) - 1, // Month is 0-based
+              parseInt(day),
+              hour,
+              parseInt(minutes)
+            );
+            
+            if (isNaN(date.getTime())) {
+              throw new Error(`Invalid date format in row ${index + 1}. Expected format: M/D/YY H:MM AM/PM`);
+            }
+            
+            return {
+              id: index + 1,
+              symbol: String(row['SYMBOL']),
+              date: date.toISOString(),
+              value: Number(row['value']),
+              accumulatedValue: 0, // Will be calculated below
+            };
+          });
+
+        if (trades.length === 0) {
+          throw new Error('No valid trades found after filtering empty symbols');
+        }
         
         // Sort trades by date
         trades.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
