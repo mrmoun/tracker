@@ -12,30 +12,20 @@ interface TradeChartProps {
     accumulatedValue: number;
     symbol: string;
     id: number;
-    isInitialInvestment?: boolean;
   }[];
   onPointClick: (trade: Trade) => void;
 }
 
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
-    const isInitialInvestment = payload[0].payload.isInitialInvestment;
-    
     return (
       <div className="bg-white p-3 border border-gray-200 rounded-md shadow-md">
         <p className="font-medium">{new Date(label).toLocaleDateString()}</p>
         <p className="text-sm text-gray-600">
-          {isInitialInvestment ? (
-            <span className="font-medium text-orange-600">Initial Investment</span>
-          ) : (
-            <>Symbol: <span className="font-medium">{payload[0].payload.symbol}</span></>
-          )}
-        </p>
-        <p className="text-sm text-blue-600">
-          Value: <span className="font-medium">${payload[0].value.toFixed(2)}</span>
+          Symbol: <span className="font-medium">{payload[0].payload.symbol}</span>
         </p>
         <p className="text-sm text-green-600">
-          Accumulated: <span className="font-medium">${payload[1].value.toFixed(2)}</span>
+          Accumulated: <span className="font-medium">${payload[0].value.toFixed(2)}</span>
         </p>
       </div>
     );
@@ -84,16 +74,14 @@ const TradeChart: React.FC<TradeChartProps> = ({ data, onPointClick }) => {
   };
 
   const handleClick = (data: any) => {
-    if (!data.isInitialInvestment) {
-      const trade: Trade = {
-        id: data.id,
-        symbol: data.symbol,
-        date: data.date,
-        value: data.value,
-        accumulatedValue: data.accumulatedValue
-      };
-      onPointClick(trade);
-    }
+    const trade: Trade = {
+      id: data.id,
+      symbol: data.symbol,
+      date: data.date,
+      value: data.value,
+      accumulatedValue: data.accumulatedValue
+    };
+    onPointClick(trade);
   };
 
   return (
@@ -104,10 +92,6 @@ const TradeChart: React.FC<TradeChartProps> = ({ data, onPointClick }) => {
           margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
         >
           <defs>
-            <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#1E40AF" stopOpacity={0.8} />
-              <stop offset="95%" stopColor="#1E40AF" stopOpacity={0} />
-            </linearGradient>
             <linearGradient id="colorAccumulated" x1="0" y1="0" x2="0" y2="1">
               <stop offset="5%" stopColor="#10B981" stopOpacity={0.8} />
               <stop offset="95%" stopColor="#10B981" stopOpacity={0} />
@@ -127,49 +111,20 @@ const TradeChart: React.FC<TradeChartProps> = ({ data, onPointClick }) => {
           <Tooltip content={<CustomTooltip />} />
           <Area 
             type="monotone" 
-            dataKey="value" 
-            stroke="#1E40AF" 
-            fillOpacity={1} 
-            fill="url(#colorValue)" 
-            dot={(props: any) => {
-              const isInitial = props.payload.isInitialInvestment;
-              return (
-                <circle
-                  cx={props.cx}
-                  cy={props.cy}
-                  r={isInitial ? 6 : 4}
-                  fill={isInitial ? "#F97316" : "#1E40AF"}
-                  stroke={isInitial ? "#F97316" : "#1E40AF"}
-                  strokeWidth={2}
-                />
-              );
-            }}
-            activeDot={{ 
-              r: 6, 
-              onClick: handleClick,
-              onMouseOver: handleMouseOver,
-              onMouseLeave: handleMouseLeave
-            }}
-          />
-          <Area 
-            type="monotone" 
             dataKey="accumulatedValue" 
             stroke="#10B981" 
             fillOpacity={1} 
             fill="url(#colorAccumulated)" 
-            dot={(props: any) => {
-              const isInitial = props.payload.isInitialInvestment;
-              return (
-                <circle
-                  cx={props.cx}
-                  cy={props.cy}
-                  r={isInitial ? 6 : 4}
-                  fill={isInitial ? "#F97316" : "#10B981"}
-                  stroke={isInitial ? "#F97316" : "#10B981"}
-                  strokeWidth={2}
-                />
-              );
-            }}
+            dot={(props: any) => (
+              <circle
+                cx={props.cx}
+                cy={props.cy}
+                r={4}
+                fill="#10B981"
+                stroke="#10B981"
+                strokeWidth={2}
+              />
+            )}
             activeDot={{ 
               r: 6, 
               onClick: handleClick,
