@@ -14,7 +14,5 @@ export interface ParsedData {
     accumulatedValue: number;
     symbol: string;
     id: number;
-    isInitialInvestment?: boolean;
   }[];
-  initialInvestment: number;
 }

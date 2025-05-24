@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FileSpreadsheet, BarChart3, DollarSign, Table } from 'lucide-react';
+import { FileSpreadsheet, BarChart3, Table } from 'lucide-react';
 import Header from './components/Header';
 import FileUpload from './components/FileUpload';
 import TradeChart from './components/TradeChart';
@@ -13,14 +13,12 @@ function App() {
   const [isLoading, setIsLoading] = useState(false);
   const [selectedTrade, setSelectedTrade] = useState<Trade | null>(null);
   const [showTradeDetails, setShowTradeDetails] = useState(false);
-  const [initialInvestment, setInitialInvestment] = useState<number>(10000);
 
   useEffect(() => {
     // Load data from localStorage on component mount
     const savedData = getDataFromLocalStorage();
     if (savedData) {
       setData(savedData);
-      setInitialInvestment(savedData.initialInvestment);
     }
   }, []);
 
@@ -55,24 +53,6 @@ function App() {
       <Header />
       
       <main className="flex-grow container mx-auto px-4 py-8">
-        <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-          <div className="flex items-center mb-4">
-            <DollarSign size={24} className="text-orange-600 mr-2" />
-            <h2 className="text-xl font-semibold text-gray-800">Initial Investment</h2>
-          </div>
-          <div className="flex items-center space-x-2">
-            <input
-              type="number"
-              value={initialInvestment}
-              onChange={(e) => setInitialInvestment(Number(e.target.value))}
-              className="px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 w-48"
-              min="0"
-              step="100"
-            />
-            <span className="text-gray-600">USD</span>
-          </div>
-        </div>
-
         {data ? (
           <div className="space-y-8 animate-fadeIn">
             <div className="bg-white rounded-lg shadow-md p-6">
@@ -103,7 +83,7 @@ function App() {
                   <span className="font-medium">Total Trades:</span> {data.trades.length}
                 </p>
                 <p className={`text-lg font-semibold ${
-                  data.trades[data.trades.length - 1].accumulatedValue >= initialInvestment 
+                  data.trades[data.trades.length - 1].accumulatedValue >= 0 
                     ? 'text-green-600' 
                     : 'text-red-600'
                 }`}>
@@ -136,7 +116,6 @@ function App() {
                 onDataParsed={handleDataParsed} 
                 isLoading={isLoading}
                 setIsLoading={setIsLoading}
-                initialInvestment={initialInvestment}
               />
             </div>
           </div>
@@ -153,7 +132,6 @@ function App() {
                 onDataParsed={handleDataParsed} 
                 isLoading={isLoading}
                 setIsLoading={setIsLoading}
-                initialInvestment={initialInvestment}
               />
             </div>
           </div>

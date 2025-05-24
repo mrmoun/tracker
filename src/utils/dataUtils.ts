@@ -1,7 +1,7 @@
 import { read, utils } from 'xlsx';
 import { ParsedData, Trade } from '../types';
 
-export const parseExcelFile = async (file: File, initialInvestment: number): Promise<ParsedData> => {
+export const parseExcelFile = async (file: File): Promise<ParsedData> => {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     
@@ -87,35 +87,23 @@ export const parseExcelFile = async (file: File, initialInvestment: number): Pro
         // Sort trades by date
         trades.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
         
-        // Calculate accumulated value starting from initial investment
-        let accumulatedValue = initialInvestment;
+        // Calculate accumulated value
+        let accumulatedValue = 0;
         trades.forEach(trade => {
           accumulatedValue += trade.value;
           trade.accumulatedValue = accumulatedValue;
         });
         
-        // Create chart data with initial investment point
-        const firstTradeDate = trades[0]?.date || new Date().toISOString();
-        const chartData = [
-          {
-            date: new Date(firstTradeDate),
-            value: initialInvestment,
-            accumulatedValue: initialInvestment,
-            symbol: 'INITIAL',
-            id: 0,
-            isInitialInvestment: true
-          },
-          ...trades.map(trade => ({
-            date: trade.date,
-            value: trade.value,
-            accumulatedValue: trade.accumulatedValue,
-            symbol: trade.symbol,
-            id: trade.id,
-            isInitialInvestment: false
-          }))
-        ];
+        // Create chart data
+        const chartData = trades.map(trade => ({
+          date: trade.date,
+          value: trade.value,
+          accumulatedValue: trade.accumulatedValue,
+          symbol: trade.symbol,
+          id: trade.id
+        }));
         
-        resolve({ trades, chartData, initialInvestment });
+        resolve({ trades, chartData });
       } catch (error) {
         reject(error);
       }

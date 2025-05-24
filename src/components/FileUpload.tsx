@@ -7,14 +7,12 @@ interface FileUploadProps {
   onDataParsed: (data: ParsedData) => void;
   isLoading: boolean;
   setIsLoading: (loading: boolean) => void;
-  initialInvestment: number;
 }
 
 const FileUpload: React.FC<FileUploadProps> = ({ 
   onDataParsed, 
   isLoading, 
-  setIsLoading,
-  initialInvestment 
+  setIsLoading
 }) => {
   const [dragActive, setDragActive] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -29,7 +27,7 @@ const FileUpload: React.FC<FileUploadProps> = ({
         throw new Error('Please upload an Excel file (.xlsx or .xls)');
       }
       
-      const data = await parseExcelFile(file, initialInvestment);
+      const data = await parseExcelFile(file);
       onDataParsed(data);
     } catch (err) {
       setError((err as Error).message || 'Error processing file');
