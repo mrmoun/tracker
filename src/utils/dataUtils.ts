@@ -30,24 +30,35 @@ export const parseExcelFile = async (file: File, initialInvestment: number): Pro
           .filter((row: Record<string, any>) => row['SYMBOL'] && String(row['SYMBOL']).trim() !== '')
           .map((row: Record<string, any>, index: number) => {
             // Parse the date from M/D/YY H:MM AM/PM format
-            const dateStr = row['DateTime'];
+            const dateStr = String(row['DateTime'] || '');
             
-            // Convert two-digit year to four-digit year
-            const [datePart, timePart] = dateStr.split(' ');
+            // Split into date and time parts, handling potential missing data
+            const [datePart = '', timePart = ''] = dateStr.split(' ');
+            if (!datePart || !timePart) {
+              throw new Error(`Invalid date format in row ${index + 1}. Expected format: M/D/YY H:MM AM/PM`);
+            }
+
+            // Parse date components
             const [month, day, shortYear] = datePart.split('/');
             const fullYear = '20' + shortYear; // Assuming years are in the 2000s
-            
-            const [time, period] = timePart.split(' ');
-            const [hours, minutes] = time.split(':');
-            
+
+            // Parse time components
+            const [time = '', period = ''] = timePart.split(' ');
+            const [hours = '', minutes = ''] = time.split(':');
+
             // Convert to 24-hour format if PM
             let hour = parseInt(hours);
-            if (period.toUpperCase() === 'PM' && hour !== 12) {
-              hour += 12;
-            } else if (period.toUpperCase() === 'AM' && hour === 12) {
-              hour = 0;
+            if (!isNaN(hour)) {
+              const upperPeriod = period.toUpperCase();
+              if (upperPeriod === 'PM' && hour !== 12) {
+                hour += 12;
+              } else if (upperPeriod === 'AM' && hour === 12) {
+                hour = 0;
+              }
+            } else {
+              throw new Error(`Invalid hour format in row ${index + 1}`);
             }
-            
+
             const date = new Date(
               parseInt(fullYear),
               parseInt(month) - 1, // Month is 0-based
